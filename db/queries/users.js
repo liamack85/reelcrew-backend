@@ -1,22 +1,35 @@
 import db from "#db/client";
 import bcrypt from "bcrypt";
 
-export async function createUser(username, password) {
+export async function createUser(
+  username,
+  password,
+  display_name,
+  email,
+) {
   const sql = `
   INSERT INTO users
-    (username, password)
+    (username, password, display_name, email)
   VALUES
-    ($1, $2)
-  RETURNING *
+    ($1, $2, $3, $4)
+  RETURNING id, username, display_name, email 
   `;
   const hashedPassword = await bcrypt.hash(password, 10);
   const {
     rows: [user],
-  } = await db.query(sql, [username, hashedPassword]);
+  } = await db.query(sql, [
+    username,
+    hashedPassword,
+    display_name,
+    email,
+  ]);
   return user;
 }
 
-export async function getUserByUsernameAndPassword(username, password) {
+export async function getUserByUsernameAndPassword(
+  username,
+  password,
+) {
   const sql = `
   SELECT *
   FROM users
@@ -30,17 +43,30 @@ export async function getUserByUsernameAndPassword(username, password) {
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) return null;
 
+  delete user.password;
   return user;
 }
 
 export async function getUserById(id) {
   const sql = `
-  SELECT *
+  SELECT id, username, display_name, email
   FROM users
   WHERE id = $1
   `;
   const {
     rows: [user],
   } = await db.query(sql, [id]);
+  return user;
+}
+
+export async function updateUser(id, display_name, email) {
+  const sql = `
+  UPDATE users SET display_name = $2, email = $3
+  WHERE id = $1
+  RETURNING id, username, display_name, email
+  `;
+  const {
+    rows: [user],
+  } = await db.query(sql, [id, display_name, email]);
   return user;
 }
