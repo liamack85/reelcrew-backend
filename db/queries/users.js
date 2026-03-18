@@ -20,18 +20,28 @@ export async function createUserFake({
   return user;
 }
 
-export async function createUser(username, password) {
+export async function createUser(
+  username,
+  password,
+  display_name,
+  email,
+) {
   const sql = `
   INSERT INTO users
-    (username, password)
+    (username, password, display_name, email)
   VALUES
-    ($1, $2)
+    ($1, $2, $3, $4)
   RETURNING *
   `;
   const hashedPassword = await bcrypt.hash(password, 10);
   const {
     rows: [user],
-  } = await db.query(sql, [username, hashedPassword]);
+  } = await db.query(sql, [
+    username,
+    hashedPassword,
+    display_name,
+    email,
+  ]);
   return user;
 }
 
@@ -51,18 +61,31 @@ export async function getUserByUsernameAndPassword(
 
   const isValid = await bcrypt.compare(password, user.password);
   if (!isValid) return null;
-
+  delete user.password;
   return user;
 }
 
 export async function getUserById(id) {
   const sql = `
-  SELECT *
+  SELECT id, username, display_name, email
   FROM users
   WHERE id = $1
   `;
   const {
     rows: [user],
   } = await db.query(sql, [id]);
+  return user;
+}
+
+export async function updateUser(id, display_name, email) {
+  const sql = `
+  UPDATE users
+  SET display_name = $2, email = $3
+  WHERE id = $1
+  RETURNING *
+  `;
+  const {
+    rows: [user],
+  } = await db.query(sql, [id, display_name, email]);
   return user;
 }
