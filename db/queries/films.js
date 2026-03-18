@@ -13,22 +13,38 @@ import db from "#db/client";
  * @param {*} rating
  * @returns
  */
-export async function createFilm(
-  api_id, title, year, director, runtime, description, poster_url, genre, rating
-) {
-const sql = `
+export async function createFilm({
+  api_id,
+  title,
+  year,
+  director,
+  runtime,
+  description,
+  poster_url,
+  genre,
+  rating,
+}) {
+  const sql = `
   INSERT INTO films
     (api_id, title, year, director, runtime, description, poster_url, genre, rating)
   VALUES
     ($1, $2, $3, $4, $5, $6, $7, $8, $9)
   RETURNING *
   `;
-const {
-  rows: [film],
-} = await db.query(sql, [
-  api_id, title, year, director, runtime, description, poster_url, genre, rating
-]);
-return film;
+  const {
+    rows: [film],
+  } = await db.query(sql, [
+    api_id,
+    title,
+    year,
+    director,
+    runtime,
+    description,
+    poster_url,
+    genre,
+    rating,
+  ]);
+  return film;
 }
 
 export async function getFilms() {
@@ -36,9 +52,7 @@ export async function getFilms() {
   SELECT *
   FROM films
   `;
-  const {
-    rows: films,
-  } = await db.query(sql);
+  const { rows: films } = await db.query(sql);
   return films;
 }
 
