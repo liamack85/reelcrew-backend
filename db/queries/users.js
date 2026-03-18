@@ -1,6 +1,25 @@
 import db from "#db/client";
 import bcrypt from "bcrypt";
 
+export async function createUserFake({
+  username,
+  password,
+  display_name,
+  email,
+}) {
+  const sql = `
+  INSERT INTO users
+    (username, password, display_name, email)
+  VALUES
+    ($1, $2, $3, $4)
+  RETURNING *
+  `;
+  const {
+    rows: [user],
+  } = await db.query(sql, [username, password, display_name, email]);
+  return user;
+}
+
 export async function createUser(username, password) {
   const sql = `
   INSERT INTO users
@@ -16,7 +35,10 @@ export async function createUser(username, password) {
   return user;
 }
 
-export async function getUserByUsernameAndPassword(username, password) {
+export async function getUserByUsernameAndPassword(
+  username,
+  password,
+) {
   const sql = `
   SELECT *
   FROM users
