@@ -5,19 +5,30 @@ export default router;
 import {
   createUser,
   getUserByUsernameAndPassword,
+  getUserById,
+  updateUser,
 } from "#db/queries/users";
 import requireBody from "#middleware/requireBody";
+import requireUser from "#middleware/requireUser";
 import { createToken } from "#utils/jwt";
 
 router
   .route("/register")
-  .post(requireBody(["username", "password"]), async (req, res) => {
-    const { username, password } = req.body;
-    const user = await createUser(username, password);
+  .post(
+    requireBody(["username", "password", "display_name", "email"]),
+    async (req, res) => {
+      const { username, password, display_name, email } = req.body;
+      const user = await createUser(
+        username,
+        password,
+        display_name,
+        email,
+      );
 
-    const token = await createToken({ id: user.id });
-    res.status(201).send(token);
-  });
+      const token = await createToken({ id: user.id });
+      res.status(201).send({ token, user });
+    },
+  );
 
 router
   .route("/login")
@@ -31,7 +42,33 @@ router
       return res.status(401).send("Invalid username or password.");
 
     const token = await createToken({ id: user.id });
-    res.send(token);
+    res.send({ token, user });
   });
 
-router.route("/me").post;
+router.route("/me").get(requireUser, async (req, res) => {
+  res.send(req.user);
+});
+
+router.param("id", async (req, res, next, id) => {
+  const profile = await getUserById(id);
+  if (!profile) return res.status(404).send("profile not found");
+
+  req.profile = profile;
+  next();
+});
+
+router
+  .route("/:id")
+  .patch(
+    requireUser,
+    requireBody(["display_name", "email"]),
+    async (req, res) => {
+      const { display_name, email } = req.body;
+      const user = await updateUser(
+        req.profile.id,
+        display_name,
+        email,
+      );
+      res.send(user);
+    },
+  );
