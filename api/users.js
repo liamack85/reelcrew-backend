@@ -75,17 +75,16 @@ router
     },
   );
 
-// GET /:id/watchlist
 router.route("/:id/watchlist").get(async (req, res) => {
   const watchlistFilms = await getUserFilms(req.profile.id);
   res.send(watchlistFilms.filter((wf) => wf.status === "watchlist"));
 });
-// GET /:id/watched
+
 router.route("/:id/watched").get(async (req, res) => {
   const watchedFilms = await getUserFilms(req.profile.id);
   res.send(watchedFilms.filter((wf) => wf.status === "watched"));
 });
-// GET /:id/groups
+
 router.route("/:id/groups").get(async (req, res) => {
   const groups = await getUserGroups(req.profile.id);
   res.send(groups);
