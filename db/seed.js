@@ -2,7 +2,6 @@ import db from "#db/client";
 import { createUserFake } from "#db/queries/users";
 import { createFilm } from "#db/queries/films";
 import { faker } from "@faker-js/faker";
-import { createGroupWatchList, createWatchGroup } from "#db/queries/group_watches";
 
 await db.connect();
 await seed();
@@ -58,7 +57,7 @@ async function seed() {
     }
   }
 
-  const groupResult = await db.query (
+  const groupResult = await db.query(
     `
     INSERT INTO watch_groups (name, creator_id)
     VALUES ($1, $2)
@@ -74,16 +73,6 @@ async function seed() {
     VALUES ($1, $2, $3),
     ($1, $4, $5)
     `,
-    [
-      group.id,
-      fakeUsers[0].id,
-      "host",
-      fakeUsers[1].id,
-      "member",
-    ],
+    [group.id, fakeUsers[0].id, "host", fakeUsers[1].id, "member"],
   );
-
-  await createWatchGroup("testName", 1)
-
-  await createGroupWatchList(1, 2, "2222-01-01", "discussion_prompt", "comment", "watching")
 }
