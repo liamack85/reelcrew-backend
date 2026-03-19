@@ -10,6 +10,8 @@ import {
 } from "#db/queries/users";
 import requireBody from "#middleware/requireBody";
 import requireUser from "#middleware/requireUser";
+import { getUserFilms } from "#db/queries/user_films";
+import { getUserGroups } from "#db/queries/watch_groups";
 import { createToken } from "#utils/jwt";
 
 router
@@ -72,3 +74,19 @@ router
       res.send(user);
     },
   );
+
+// GET /:id/watchlist
+router.route("/:id/watchlist").get(async (req, res) => {
+  const watchlistFilms = await getUserFilms(req.profile.id);
+  res.send(watchlistFilms.filter((wf) => wf.status === "watchlist"));
+});
+// GET /:id/watched
+router.route("/:id/watched").get(async (req, res) => {
+  const watchedFilms = await getUserFilms(req.profile.id);
+  res.send(watchedFilms.filter((wf) => wf.status === "watched"));
+});
+// GET /:id/groups
+router.route("/:id/groups").get(async (req, res) => {
+  const groups = await getUserGroups(req.profile.id);
+  res.send(groups);
+});
