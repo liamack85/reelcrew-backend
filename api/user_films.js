@@ -42,5 +42,5 @@ router.patch("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   await deleteUserFilm(req.userFilm.id);
-  res.status(204);
+  res.sendStatus(204);
 });
