@@ -4,7 +4,8 @@ export default app;
 
 import usersRouter from "#api/users";
 import filmsRouter from "#api/films";
-import groupsRouter from "#api/groups";
+import watchGroupsRouter from "#api/watch_groups";
+import userFilmsRouter from "#api/user_films";
 import getUserFromToken from "#middleware/getUserFromToken";
 import handlePostgresErrors from "#middleware/handlePostgresErrors";
 import cors from "cors";
@@ -21,11 +22,11 @@ app.use(getUserFromToken);
 
 app.get("/", (req, res) => res.send("Hello, World!"));
 
-
 app.use("/users", usersRouter);
 app.use("/films", filmsRouter);
 app.use("/groups", groupsRouter);
-
+app.use("/user-films", userFilmsRouter);
+app.use("/watch-groups", watchGroupsRouter);
 
 app.use(handlePostgresErrors);
 app.use((err, req, res, next) => {
