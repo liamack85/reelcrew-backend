@@ -7,3 +7,6 @@ title(exact): ...t=MovieTitle
 imdb ID: ...i=tt1209234
 
 poster req: http://img.omdbapi.com/?apikey=d6e2d076&
+
+
+louies api: https://www.omdbapi.com/?i=tt3896198&apikey=c11d5649
