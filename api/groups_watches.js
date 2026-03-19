@@ -3,14 +3,8 @@ const router = express.Router();
 export default router;
 
 import requireBody from "#middleware/requireBody";
-import { createGroupWatchList, createWatchGroup, getGroupWatchList, getGroupWatchListById } from "#db/queries/group_watches";
+import { createGroupWatchList, getGroupWatchList, getGroupWatchListById } from "#db/queries/group_watches";
 
-router.route("/")
-.post(async (req,res) => {
-      const {name, creator_id} = req.body;
-      const watchGroup = await createWatchGroup(name, creator_id);
-      res.status(201).send(watchGroup);
-});
 
 router
   .route("/")
