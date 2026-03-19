@@ -58,6 +58,32 @@ async function seed() {
     }
   }
 
+<<<<<<<<< Temporary merge branch 1
+  const groupResult = await db.query (
+    `
+    INSERT INTO watch_groups (name, creator_id)
+    VALUES ($1, $2)
+    RETURNING *
+    `,
+    ["Test Group", fakeUsers[0].id],
+  );
+
+  const group = groupResult.rows[0];
+  await db.query(
+    `
+    INSERT INTO group_members (group_id, user_id, role)
+    VALUES ($1, $2, $3),
+    ($1, $4, $5)
+    `,
+    [
+      group.id,
+      fakeUsers[0].id,
+      "host",
+      fakeUsers[1].id,
+      "member",
+    ],
+  );
+=========
 
   await createWatchGroup("testName", 1)
 
