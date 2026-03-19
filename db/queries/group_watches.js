@@ -51,15 +51,3 @@ export const updateGroupWatchList = async (group_id, film_id, deadline, discussi
   // return updatedGroupWatchList
   return updatedGroupWatchList;
 }
-
-
-export const createWatchGroup = async(name, creator_id) => {
-  const sql = `
-  INSERT INTO watch_groups 
-    (name, creator_id)
-  VALUES ($1, $2)
-  RETURNING *
-  `
-  const { rows: [group] } = await db.query(sql, [name, creator_id]);
-  return group
-}

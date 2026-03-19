@@ -34,7 +34,7 @@ router.param("id", async (req, res, next, id) => {
   next();
 });
 
-router.patch(":/id", async (req, res) => {
+router.patch("/:id", async (req, res) => {
   const { status, rating } = req.body;
   const userFilm = await updateUserFilm(req.userFilm.id, { status, rating });
   res.send(userFilm);
