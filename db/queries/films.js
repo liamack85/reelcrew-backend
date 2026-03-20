@@ -47,7 +47,7 @@ export async function createFilm({
   return film;
 }
 
-export async function uspertFilm({
+export async function upsertFilm({
   api_id,
   title,
   year,
