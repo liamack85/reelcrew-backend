@@ -6,7 +6,7 @@ import {
   getFilmByApiId,
   getFilmById,
   getFilms,
-  uspertFilm,
+  upsertFilm,
 } from "#db/queries/films";
 
 const OMDB_KEY = process.env.OMDB_KEY;
@@ -44,7 +44,7 @@ router.get("/api/:apiId", async (req, res) => {
     return res.status(404).send("Film not found.");
   }
 
-  const film = await uspertFilm({
+  const film = await upsertFilm({
     api_id: data.imdbID,
     title: data.Title,
     year: parseInt(data.Year) || null,
