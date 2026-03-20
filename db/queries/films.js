@@ -122,3 +122,22 @@ export async function getFilmByApiId(apiId) {
   } = await db.query(sql, [apiId]);
   return film;
 }
+
+export async function searchFilms(query, genre) {
+  const search = query ? `%${query}%` : `%`;
+  const params = [search];
+  let genreClause = "";
+
+  if (genre) {
+    params.push(`%${genre}%`);
+    genreClause = "AND genre ILIKE $2";
+  }
+
+  const sql = `
+  SELECT * FROM films
+  WHERE title ILIKE $1 ${genreClause}
+  ORDER BY title ASC
+  `;
+  const { rows: films } = await db.query(sql, params);
+  return films;
+}

@@ -6,26 +6,20 @@ import {
   getFilmByApiId,
   getFilmById,
   getFilms,
+  searchFilms,
   upsertFilm,
 } from "#db/queries/films";
 
 const OMDB_KEY = process.env.OMDB_KEY;
 
 router.get("/", async (req, res) => {
+  const { q, genre } = req.query;
+  if (q || genre) {
+    const films = await searchFilms(q, genre);
+    return res.send(films);
+  }
   const films = await getFilms();
   res.send(films);
-});
-
-router.param("id", async (req, res, next, id) => {
-  const film = await getFilmById(id);
-  if (!film) return res.status(404).send("Film not found.");
-
-  req.film = film;
-  next();
-});
-
-router.get("/:id", async (req, res) => {
-  res.send(req.film);
 });
 
 router.get("/api/:apiId", async (req, res) => {
@@ -56,4 +50,15 @@ router.get("/api/:apiId", async (req, res) => {
     rating: parseFloat(data.imdbRating) || null,
   });
   res.send({ source: "omdb", film });
+});
+
+router.param("id", async (req, res, next, id) => {
+  const film = await getFilmById(id);
+  if (!film) return res.status(404).send("Film not found.");
+  req.film = film;
+  next();
+});
+
+router.get("/:id", async (req, res) => {
+  res.send(req.film);
 });
