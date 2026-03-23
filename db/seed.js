@@ -57,7 +57,7 @@ async function seed() {
     }
   }
 
-  const groupResult = await db.query(
+  const groupResult = await db.query (
     `
     INSERT INTO watch_groups (name, creator_id)
     VALUES ($1, $2)
@@ -75,4 +75,16 @@ async function seed() {
     `,
     [group.id, fakeUsers[0].id, "host", fakeUsers[1].id, "member"],
   );
+
+  await db.query(
+  `
+  INSERT INTO group_watches (group_id, film_id, deadline, discussion_prompt, status)
+  VALUES ($1, $2, $3, $4, $5)
+  `,
+  [group.id, fakeFilms[0].id, "2026-04-15", "What did you think of the ending?", "watching"]
+);
+
+  await createWatchGroup("testName", 1)
+
+  await createGroupWatchList(1, 2, "2222-01-01", "discussion_prompt", "comment", "watching")
 }
