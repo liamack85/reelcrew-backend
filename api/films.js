@@ -13,9 +13,9 @@ import {
 const OMDB_KEY = process.env.OMDB_KEY;
 
 router.get("/", async (req, res) => {
-  const { q, genre } = req.query;
-  if (q || genre) {
-    const films = await searchFilms(q, genre);
+  const { q } = req.query;
+  if (q) {
+    const films = await searchFilms(q);
     return res.send(films);
   }
   const films = await getFilms();

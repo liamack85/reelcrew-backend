@@ -123,21 +123,14 @@ export async function getFilmByApiId(apiId) {
   return film;
 }
 
-export async function searchFilms(query, genre) {
+export async function searchFilms(query) {
   const search = query ? `%${query}%` : `%`;
-  const params = [search];
-  let genreClause = "";
-
-  if (genre) {
-    params.push(`%${genre}%`);
-    genreClause = "AND genre ILIKE $2";
-  }
 
   const sql = `
   SELECT * FROM films
-  WHERE title ILIKE $1 ${genreClause}
+  WHERE (title ILIKE $1 OR genre ILIKE $1)
   ORDER BY title ASC
   `;
-  const { rows: films } = await db.query(sql, params);
+  const { rows: films } = await db.query(sql, [search]);
   return films;
 }
