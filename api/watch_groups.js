@@ -2,7 +2,12 @@ import express from "express";
 const router = express.Router();
 export default router;
 
-import { createGroup } from "#db/queries/watch_groups";
+import { createGroup, getGroupById, getGroups } from "#db/queries/watch_groups";
+
+router.get("/", async (req,res) => {
+      const groups = await getGroups();
+      res.status(200).send(groups);
+})
 
 router.route("/")
 .post(async (req,res) => {
@@ -11,3 +16,14 @@ router.route("/")
       res.status(201).send(watchGroup);
 });
 
+router.param("id", async (req,res,next,id) => {
+      const group = await getGroupById(id);
+      if(!group) return res.status(404).send("Group not found.");
+
+      req.group = group;
+      next();
+})
+
+router.get("/:id", (req,res)=>{
+      res.send(req.group);
+});
