@@ -12,6 +12,7 @@ import {
 
 const OMDB_KEY = process.env.OMDB_KEY;
 
+/* Fetches all films or filters films by search query. */
 router.get("/", async (req, res) => {
   const { q } = req.query;
   if (q) {
@@ -22,6 +23,9 @@ router.get("/", async (req, res) => {
   res.send(films);
 });
 
+/* Fetches a film using IMDB ID. Implements data caching by
+checking local DB first, then hits the OMDB API if that
+film is not found. New results are saved to local DB. */
 router.get("/api/:apiId", async (req, res) => {
   const { apiId } = req.params;
 
@@ -52,6 +56,8 @@ router.get("/api/:apiId", async (req, res) => {
   res.send({ source: "omdb", film });
 });
 
+/* Middleware that preloads film by ID before using
+:id routes to ensure valid film before executing. */
 router.param("id", async (req, res, next, id) => {
   const film = await getFilmById(id);
   if (!film) return res.status(404).send("Film not found.");
@@ -59,6 +65,7 @@ router.param("id", async (req, res, next, id) => {
   next();
 });
 
+/* Returns a single pre-loaded film by ID. */
 router.get("/:id", async (req, res) => {
   res.send(req.film);
 });

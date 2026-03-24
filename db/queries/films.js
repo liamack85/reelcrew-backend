@@ -1,7 +1,7 @@
 import db from "#db/client";
 
 /**
- *
+ * Inserts a new film into the database.
  * @param {*} api_id
  * @param {*} title
  * @param {*} year
@@ -47,6 +47,10 @@ export async function createFilm({
   return film;
 }
 
+/**
+ * Inserts a film or updates it if the api_id already exists.
+ * Used to cache OMDB results — safe to call multiple times with the same film.
+ */
 export async function upsertFilm({
   api_id,
   title,
@@ -91,6 +95,9 @@ export async function upsertFilm({
   return film;
 }
 
+/*
+ * Returns all films in the database with no filtering.
+ */
 export async function getFilms() {
   const sql = `
   SELECT *
@@ -100,6 +107,10 @@ export async function getFilms() {
   return films;
 }
 
+/**
+ * Returns a single film by its internal Postgres id.
+ * Returns undefined if no film with the given id exists.
+ */
 export async function getFilmById(id) {
   const sql = `
   SELECT *
@@ -112,6 +123,10 @@ export async function getFilmById(id) {
   return film;
 }
 
+/**
+ * Returns a single film by its IMDb api_id (e.g. "tt1375666").
+ * Returns undefined if the film is not cached in the database.
+ */
 export async function getFilmByApiId(apiId) {
   const sql = `
   SELECT * FROM films
@@ -123,6 +138,10 @@ export async function getFilmByApiId(apiId) {
   return film;
 }
 
+/**
+ * Searches films by title and genre using a case-insensitive match.
+ * If no query is provided, returns all films ordered alphabetically.
+ */
 export async function searchFilms(query) {
   const search = query ? `%${query}%` : `%`;
 
