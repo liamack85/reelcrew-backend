@@ -2,7 +2,7 @@ import express from "express";
 import { createGroup, getGroupById, getGroups, getUserGroups } from "#db/queries/watch_groups";
 import getUserFromToken from "#middleware/getUserFromToken";
 import requireUser from "#middleware/requireUser";
-import { getMembers } from "#db/queries/group_members";
+import { addMember, getMembers } from "#db/queries/group_members";
 
 const router = express.Router();
 export default router;
@@ -16,6 +16,8 @@ router.route("/")
 .post(async (req,res) => {
       const {name, creator_id} = req.body;
       const watchGroup = await createGroup(name, creator_id);
+      console.log(watchGroup);
+      await addMember(watchGroup.id, creator_id, "host")
       res.status(201).send(watchGroup);
 });
 
