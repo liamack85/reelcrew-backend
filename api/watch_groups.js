@@ -2,7 +2,7 @@ import express from "express";
 import { createGroup, getGroupById, getGroups, getUserGroups } from "#db/queries/watch_groups";
 import getUserFromToken from "#middleware/getUserFromToken";
 import requireUser from "#middleware/requireUser";
-import { addMember, getMembers } from "#db/queries/group_members";
+import { addMember, getMembers, removeMember } from "#db/queries/group_members";
 
 const router = express.Router();
 export default router;
@@ -66,4 +66,16 @@ router.get("/:id/members", async (req, res) => {
       } catch (err) {
             console.error(err.message);
       }
+});
+
+router.post("/:id/members", async(req, res)=>{
+      const {user_id} = req.body;
+      const newMember = await addMember(req.group.id, user_id, "member");
+      res.send(newMember);
+});
+
+router.delete("/:id/members", async(req,res)=>{
+      const {user_id} = req.body;
+      const newMember = await removeMember(req.group.id, user_id);
+      res.send(newMember);
 });
