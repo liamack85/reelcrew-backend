@@ -1,6 +1,7 @@
 import db from "#db/client";
 import bcrypt from "bcrypt";
 
+// DEV ONLY — skips bcrypt, do not use in production routes
 export async function createUserFake({
   username,
   password,
@@ -20,12 +21,15 @@ export async function createUserFake({
   return user;
 }
 
-export async function createUser(
-  username,
-  password,
-  display_name,
-  email,
-) {
+/**
+ * Creates a new user with a bcrypt-hashed password.
+ * @param {string} username - Unique username
+ * @param {string} password - Plain-text password (hashed before storage)
+ * @param {string} display_name - Display name shown in the UI
+ * @param {string} email - User's email address
+ * @returns {Promise<Object>} The newly created user row
+ */
+export async function createUser(username, password, display_name, email) {
   const sql = `
   INSERT INTO users
     (username, password, display_name, email)
@@ -36,19 +40,19 @@ export async function createUser(
   const hashedPassword = await bcrypt.hash(password, 10);
   const {
     rows: [user],
-  } = await db.query(sql, [
-    username,
-    hashedPassword,
-    display_name,
-    email,
-  ]);
+  } = await db.query(sql, [username, hashedPassword, display_name, email]);
   return user;
 }
 
-export async function getUserByUsernameAndPassword(
-  username,
-  password,
-) {
+/**
+ * Looks up a user by username and verifies their password.
+ * Returns null if the user doesn't exist or the password is wrong.
+ * Strips the password field from the returned object.
+ * @param {string} username
+ * @param {string} password - Plain-text password to compare against the hash
+ * @returns {Promise<Object|null>}
+ */
+export async function getUserByUsernameAndPassword(username, password) {
   const sql = `
   SELECT *
   FROM users
@@ -65,6 +69,11 @@ export async function getUserByUsernameAndPassword(
   return user;
 }
 
+/**
+ * Fetches a user by ID. Selects only safe columns — password is excluded.
+ * @param {number} id
+ * @returns {Promise<Object|undefined>}
+ */
 export async function getUserById(id) {
   const sql = `
   SELECT id, username, display_name, email
@@ -77,6 +86,13 @@ export async function getUserById(id) {
   return user;
 }
 
+/**
+ * Updates a user's display name and email.
+ * @param {number} id
+ * @param {string} display_name
+ * @param {string} email
+ * @returns {Promise<Object>} The updated user row
+ */
 export async function updateUser(id, display_name, email) {
   const sql = `
   UPDATE users
