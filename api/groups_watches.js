@@ -11,7 +11,7 @@ const router = express.Router();
 export default router;
 
 import requireBody from "#middleware/requireBody";
-import { createGroupWatchList, getGroupWatchList, getGroupWatchListById } from "#db/queries/group_watches";
+import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId } from "#db/queries/group_watches";
 
 /**
  * @typedef {Object} Watchlist
@@ -43,6 +43,11 @@ router.route("/").get(async (req,res) => {
 })
 
 /** Load watchlist by :id or return 404. */
+router.get("/group/:groupId", async (req, res) => {
+  const watches = await getWatchesByGroupId(req.params.groupId);
+  res.send(watches);
+});
+
 router.param("id", async (req, res, next, id) => {
   const watchlist = await getGroupWatchListById(id);
   if (!watchlist) return res.status(404).send("Watchlist not found.");

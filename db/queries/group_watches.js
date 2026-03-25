@@ -73,3 +73,16 @@ export const updateGroupWatchList = async (group_id, film_id, deadline, discussi
 
   return updatedGroupWatchList;
 }
+
+export async function getWatchesByGroupId(group_id) {
+  const sql = `
+  SELECT group_watches.*, films.title, films.poster_url, films.year, films.director
+  FROM group_watches
+  JOIN films ON group_watches.film_id = films.id
+  WHERE group_watches.group_id = $1
+  ORDER BY group_watches.deadline DESC
+  `;
+
+  const { rows } = await db.query(sql, [groupId]);
+  return rows;
+}
