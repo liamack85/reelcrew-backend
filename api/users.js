@@ -14,6 +14,14 @@ import { getUserFilms } from "#db/queries/user_films";
 import { getUserGroups } from "#db/queries/watch_groups";
 import { createToken } from "#utils/jwt";
 
+/**
+ * Register a new user and return an auth token.
+ *
+ * @param {string} req.body.username
+ * @param {string} req.body.password
+ * @param {string} req.body.display_name
+ * @param {string} req.body.email
+ */
 router
   .route("/register")
   .post(
@@ -32,6 +40,13 @@ router
     },
   );
 
+/**
+ * Authenticate a user and return an auth token.
+ *
+ * @route POST /login
+ * @param {string} req.body.username
+ * @param {string} req.body.password
+ */
 router
   .route("/login")
   .post(requireBody(["username", "password"]), async (req, res) => {
@@ -47,10 +62,21 @@ router
     res.send({ token, user });
   });
 
+/**
+ * Get the authenticated user's profile.
+ *
+ * @returns {Object} Authenticated user (req.user)
+ */
 router.route("/me").get(requireUser, async (req, res) => {
   res.send(req.user);
 });
 
+/**
+ * Param middleware to load a user profile by ID and attach it to req.profile.
+ *
+ * @param {number} id - user id from the route
+ * @returns {404} if profile not found
+ */
 router.param("id", async (req, res, next, id) => {
   const profile = await getUserById(id);
   if (!profile) return res.status(404).send("profile not found");
@@ -59,6 +85,13 @@ router.param("id", async (req, res, next, id) => {
   next();
 });
 
+/**
+ * Update a user's display name and email.
+ *
+ * @auth requireUser
+ * @param {string} req.body.display_name
+ * @param {string} req.body.email
+ */
 router
   .route("/:id")
   .patch(
@@ -75,16 +108,25 @@ router
     },
   );
 
+/**
+ * Get a user's watchlist (films with status === "watchlist").
+ */
 router.route("/:id/watchlist").get(async (req, res) => {
   const watchlistFilms = await getUserFilms(req.profile.id);
   res.send(watchlistFilms.filter((wf) => wf.status === "watchlist"));
 });
 
+/**
+ * Get a user's watched films (status === "watched").
+ */
 router.route("/:id/watched").get(async (req, res) => {
   const watchedFilms = await getUserFilms(req.profile.id);
   res.send(watchedFilms.filter((wf) => wf.status === "watched"));
 });
 
+/**
+ * Get groups the user belongs to.
+ */
 router.route("/:id/groups").get(async (req, res) => {
   const groups = await getUserGroups(req.profile.id);
   res.send(groups);

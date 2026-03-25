@@ -35,7 +35,6 @@ router.get("/mine", getUserFromToken, requireUser, async (req, res) => {
 
 /**
  * Route param middleware to load a group by ID.
- *
  * Attaches the group to req.group or returns 404 if not found.
  *
  * @param {number} id - Group ID from URL param.
