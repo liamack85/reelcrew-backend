@@ -83,6 +83,6 @@ export async function getWatchesByGroupId(group_id) {
   ORDER BY group_watches.deadline DESC
   `;
 
-  const { rows } = await db.query(sql, [groupId]);
+  const { rows } = await db.query(sql, [group_id]);
   return rows;
 }
