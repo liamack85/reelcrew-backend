@@ -1,5 +1,8 @@
 import db from "#db/client";
 
+/**
+ * Retrieve all watch groups with member counts.
+ */
 export async function getGroups() {
   const sql = `
   SELECT watch_groups.*, COUNT(group_members.id) AS member_count
@@ -12,6 +15,11 @@ export async function getGroups() {
   return rows;
 }
 
+/**
+ * Retrieve a single watch group by ID.
+ *
+ * @param {number} id - The ID of the watch group.
+ */
 export async function getGroupById(id) {
   const sql = `
   SELECT *
@@ -25,6 +33,13 @@ export async function getGroupById(id) {
   return group;
 }
 
+/**
+ * Create a new watch group.
+ *
+ * @async
+ * @param {string} name - The name of the group.
+ * @param {number} creatorId - The ID of the user creating the group.
+ */
 export async function createGroup(name, creatorId) {
 const sql = `
 INSERT INTO watch_groups 
@@ -39,6 +54,11 @@ const {
 return group;
 }
 
+/**
+ * Retrieve watch groups a user belongs to, including the user's role in each group.
+ *
+ * @param {number} userId - The ID of the user.
+ */
 export async function getUserGroups(userId) {
   const sql = `
   SELECT watch_groups.*, group_members.role

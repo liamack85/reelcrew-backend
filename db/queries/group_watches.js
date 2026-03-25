@@ -1,5 +1,14 @@
 import db from "#db/client";
 
+/**
+ * 
+ * @param {number} group_id - ID of the group to associate with this watch entry.
+ * @param {string} film_id - ID of the film to associate with this watch entry.
+ * @param {Date} deadline - Deadline for the watch (Date object or ISO string). Use null to clear.
+ * @param {string} discussion_prompt - Optional discussion prompt text.
+ * @param {string} comment - Optional comment.
+ * @param {string} status - Status of the watch (e.g., 'watchlist' or 'watched'). 
+ */
 export async function createGroupWatchList(
   group_id, film_id, deadline, discussion_prompt, comment, status
 ) {
@@ -24,6 +33,11 @@ export const getGroupWatchList = async () => {
   return watchlist;
 }
 
+/**
+ * 
+ * @param {number} id 
+ * @returns 
+ */
 export const getGroupWatchListById = async (id) => {
   const sql = `
     SELECT *
@@ -34,6 +48,16 @@ export const getGroupWatchListById = async (id) => {
   return watchlistItem;
 }
 
+/**
+ * 
+ * @param {number} group_id - ID of the group to associate with this watch entry.
+ * @param {number} film_id - ID of the film to associate with this watch entry.
+ * @param {Date} deadline - Deadline for the watch (Date object or ISO string). Use null to clear.
+ * @param {string} discussion_prompt - Optional discussion prompt text.
+ * @param {string} comment - Optional comment about the watch.
+ * @param {string} status - Status of the watch (e.g., 'watchlist' or 'watched').
+ * @param {number} id - ID of the group watch entry to update.
+ */
 export const updateGroupWatchList = async (group_id, film_id, deadline, discussion_prompt, comment, status, id) => {
   const sql = `
     UPDATE group_watches 
@@ -43,12 +67,10 @@ export const updateGroupWatchList = async (group_id, film_id, deadline, discussi
     RETURNING *
     `;
 
-  // query the database
   const { rows: [updatedGroupWatchList] } = await db.query(sql, [
     group_id, film_id, deadline, discussion_prompt, comment, status, id
   ]);
 
-  // return updatedGroupWatchList
   return updatedGroupWatchList;
 }
 
