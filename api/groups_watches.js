@@ -11,7 +11,8 @@ const router = express.Router();
 export default router;
 
 import requireBody from "#middleware/requireBody";
-import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId } from "#db/queries/group_watches";
+import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId, getCurrentWatchByGroupId } from "#db/queries/group_watches";
+
 
 /**
  * @typedef {Object} Watchlist
