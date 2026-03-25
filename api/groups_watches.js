@@ -3,7 +3,7 @@ const router = express.Router();
 export default router;
 
 import requireBody from "#middleware/requireBody";
-import { createGroupWatchList, getGroupWatchList, getGroupWatchListById } from "#db/queries/group_watches";
+import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId } from "#db/queries/group_watches";
 
 
 router
@@ -21,6 +21,11 @@ router.route("/").get(async (req,res) => {
   const groupWatches = await getGroupWatchList();
   res.send(groupWatches);
 })
+
+router.get("/group/:groupId", async (req, res) => {
+  const watches = await getWatchesByGroupId(req.params.groupId);
+  res.send(watches);
+});
 
 router.param("id", async (req, res, next, id) => {
   const watchlist = await getGroupWatchListById(id);
