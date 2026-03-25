@@ -25,7 +25,7 @@ app.get("/", (req, res) => res.send("Hello, World!"));
 
 app.use("/users", usersRouter);
 app.use("/films", filmsRouter);
-app.use("/groups-watches", watchGroupsRouter);
+app.use("/watch-groups", watchGroupsRouter);
 app.use("/user-films", userFilmsRouter);
 app.use("/group-watches", groupWatchesRouter);
 
