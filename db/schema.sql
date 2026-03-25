@@ -7,6 +7,8 @@ DROP TABLE IF EXISTS user_films;
 DROP TABLE IF EXISTS films;
 DROP TABLE IF EXISTS users;
 
+
+-- Registered Users
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
@@ -15,6 +17,8 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL
 );
 
+
+-- -- Films fetched from OMDb API
 CREATE TABLE films (
   id SERIAL PRIMARY KEY,
   api_id VARCHAR(20) UNIQUE NOT NULL,
@@ -28,6 +32,7 @@ CREATE TABLE films (
   rating NUMERIC(2,1)
 );
 
+-- Keeps track of which films a user has on their watchlist or has watched
 CREATE TABLE user_films (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -38,12 +43,14 @@ CREATE TABLE user_films (
   UNIQUE (user_id, film_id)
 );
 
+-- Watch groups (e.g. "Friday Night Movie Club")
 CREATE TABLE watch_groups (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   creator_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Users who belong to a watch group, with their role
 CREATE TABLE group_members (
   id SERIAL PRIMARY KEY,
   group_id INT NOT NULL REFERENCES watch_groups(id) ON DELETE CASCADE,
@@ -53,6 +60,7 @@ CREATE TABLE group_members (
   UNIQUE (group_id, user_id)
 );
 
+-- Individual watch events — a film assigned to a group with a deadline
 CREATE TABLE group_watches (
   id SERIAL PRIMARY KEY,
   group_id INT NOT NULL REFERENCES watch_groups(id) ON DELETE CASCADE,
@@ -63,6 +71,7 @@ CREATE TABLE group_watches (
   status VARCHAR(255) NOT NULL CHECK (status IN ('watching', 'complete')) DEFAULT 'watching'
 );
 
+-- Stretch Goal, pending completion: Tracks each member's progress on a group watch event
 CREATE TABLE group_watch_progress (
   id SERIAL PRIMARY KEY,
   group_watch_id INT NOT NULL REFERENCES group_watches(id) ON DELETE CASCADE,
@@ -72,6 +81,7 @@ CREATE TABLE group_watch_progress (
   UNIQUE (group_watch_id, user_id)
 );
 
+-- Stretch Goal, pending completion: Votes for which film to watch next in a group
 CREATE TABLE group_votes (
   id SERIAL PRIMARY KEY,
   group_id INT NOT NULL REFERENCES watch_groups(id) ON DELETE CASCADE,
