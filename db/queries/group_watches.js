@@ -86,3 +86,16 @@ export async function getWatchesByGroupId(group_id) {
   const { rows } = await db.query(sql, [group_id]);
   return rows;
 }
+
+export async function getCurrentWatchByGroupId(group_id) {
+  const sql = `
+    SELECT group_watches.*, films.title, films.poster_url, films.year, films.director, films.runtime, films.genre, films.description
+    FROM group_watches
+    JOIN films ON group_watches.film_id = films.id
+    WHERE group_watches.group_id = $1 AND group_watches.status = 'watching'
+    ORDER BY group_watches.deadline ASC
+    LIMIT 1
+  `;
+  const { rows: [watch] } = await db.query(sql, [group_id]);
+  return watch;
+}

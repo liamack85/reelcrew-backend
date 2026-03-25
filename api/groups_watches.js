@@ -48,6 +48,12 @@ router.get("/group/:groupId", async (req, res) => {
   res.send(watches);
 });
 
+router.get("/group/:groupId/current", async (req, res) => {
+  const watch = await getCurrentWatchByGroupId(req.params.groupId);
+  if (!watch) return res.status(404).send("No active watch found.");
+  res.send(watch);
+});
+
 router.param("id", async (req, res, next, id) => {
   const watchlist = await getGroupWatchListById(id);
   if (!watchlist) return res.status(404).send("Watchlist not found.");
