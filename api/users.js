@@ -28,12 +28,7 @@ router
     requireBody(["username", "password", "display_name", "email"]),
     async (req, res) => {
       const { username, password, display_name, email } = req.body;
-      const user = await createUser(
-        username,
-        password,
-        display_name,
-        email,
-      );
+      const user = await createUser(username, password, display_name, email);
 
       const token = await createToken({ id: user.id });
       res.status(201).send({ token, user });
@@ -51,12 +46,8 @@ router
   .route("/login")
   .post(requireBody(["username", "password"]), async (req, res) => {
     const { username, password } = req.body;
-    const user = await getUserByUsernameAndPassword(
-      username,
-      password,
-    );
-    if (!user)
-      return res.status(401).send("Invalid username or password.");
+    const user = await getUserByUsernameAndPassword(username, password);
+    if (!user) return res.status(401).send("Invalid username or password.");
 
     const token = await createToken({ id: user.id });
     res.send({ token, user });
@@ -71,6 +62,7 @@ router.route("/me").get(requireUser, async (req, res) => {
   res.send(req.user);
 });
 
+// Runs before every /:id route — loads the target profile into req.profile
 /**
  * Param middleware to load a user profile by ID and attach it to req.profile.
  *
@@ -99,15 +91,12 @@ router
     requireBody(["display_name", "email"]),
     async (req, res) => {
       const { display_name, email } = req.body;
-      const user = await updateUser(
-        req.profile.id,
-        display_name,
-        email,
-      );
+      const user = await updateUser(req.profile.id, display_name, email);
       res.send(user);
     },
   );
 
+// will refactor this route, don't know if necessary for the frontend anymore
 /**
  * Get a user's watchlist (films with status === "watchlist").
  */
@@ -116,6 +105,7 @@ router.route("/:id/watchlist").get(async (req, res) => {
   res.send(watchlistFilms.filter((wf) => wf.status === "watchlist"));
 });
 
+// will refactor this route, don't know if necessary for the frontend anymore
 /**
  * Get a user's watched films (status === "watched").
  */
