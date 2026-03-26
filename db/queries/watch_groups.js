@@ -33,6 +33,19 @@ export async function getGroupById(id) {
   return group;
 }
 
+export async function deleteGroup(id, creator_id) {
+  const sql = `
+  DELETE FROM watch_groups
+  WHERE id = $1 AND creator_id = $2
+  RETURNING *
+  `;
+
+  const {
+    rows: [group],
+  } = await db.query(sql, [id, creator_id]);
+  return group;
+}
+
 /**
  * Create a new watch group.
  *
