@@ -4,6 +4,7 @@ export async function getUserFilms(userId) {
   const sql = `
   SELECT
     user_films.*,
+    films.id AS film_id,
     films.api_id,
     films.title,
     films.year,
