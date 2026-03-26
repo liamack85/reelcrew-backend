@@ -53,8 +53,6 @@ RETURNING *
   } = await db.query(sql, [name, creatorId]);
   return group;
 }
-@param {number} userId - The ID of the user.
-
 
 /**
  * Retrieves all watch groups a user belongs to, enriched with:
