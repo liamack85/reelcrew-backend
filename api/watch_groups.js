@@ -1,5 +1,5 @@
 import express from "express";
-import { createGroup, getGroupById, getGroups, getUserGroups } from "#db/queries/watch_groups";
+import { createGroup, deleteGroup, getGroupById, getGroups, getUserGroups } from "#db/queries/watch_groups";
 import getUserFromToken from "#middleware/getUserFromToken";
 import requireUser from "#middleware/requireUser";
 import { addMember, getMembers, removeMember } from "#db/queries/group_members";
@@ -23,7 +23,7 @@ router.route("/")
 .post(async (req,res) => {
       const {name, creator_id} = req.body;
       const watchGroup = await createGroup(name, creator_id);
-      console.log(watchGroup);
+
       await addMember(watchGroup.id, creator_id, "host")
       res.status(201).send(watchGroup);
 });
@@ -78,4 +78,11 @@ router.delete("/:id/members", async(req,res)=>{
       const {user_id} = req.body;
       const newMember = await removeMember(req.group.id, user_id);
       res.send(newMember);
+});
+
+router.delete("/:id", requireUser, async(req,res)=>{
+      const deletedGroup = await deleteGroup(req.group.id, req.user.id);
+      console.log("DELETED: ", deletedGroup);
+      
+      res.sendStatus(204);
 });
