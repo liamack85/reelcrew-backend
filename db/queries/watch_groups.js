@@ -41,30 +41,48 @@ export async function getGroupById(id) {
  * @param {number} creatorId - The ID of the user creating the group.
  */
 export async function createGroup(name, creatorId) {
-const sql = `
+  const sql = `
 INSERT INTO watch_groups 
 (name, creator_id)
 VALUES ($1, $2)
 RETURNING *
 `;
 
-const {
-  rows: [group],
-} = await db.query(sql, [name, creatorId]);
-return group;
+  const {
+    rows: [group],
+  } = await db.query(sql, [name, creatorId]);
+  return group;
 }
+@param {number} userId - The ID of the user.
+
 
 /**
- * Retrieve watch groups a user belongs to, including the user's role in each group.
- *
+ * Retrieves all watch groups a user belongs to, enriched with:
+ * - member_count: total members in the group
+ * - deadline: deadline of the active watch (null if no active watch)
+ * - watched_count: number of members who have marked the active watch as watched
+ * - film_title: title of the active watch film (null if no active watch)
+ * - Necessary for the function of the Profile Group progress cards
  * @param {number} userId - The ID of the user.
  */
 export async function getUserGroups(userId) {
   const sql = `
-  SELECT watch_groups.*, group_members.role
-  FROM watch_groups
-  JOIN group_members ON watch_groups.id = group_members.group_id
-  WHERE group_members.user_id = $1
+  SELECT
+    wg.id,
+    wg.name,
+    wg.creator_id,
+    gm.role,
+    COUNT(DISTINCT all_members.id) AS member_count,
+    gw.deadline,
+    COUNT(DISTINCT gwp.user_id) FILTER (WHERE gwp.status = 'watched') AS watched_count,
+    f.title AS film_title
+  FROM watch_groups wg
+  JOIN group_members gm ON wg.id = gm.group_id AND gm.user_id = $1
+  LEFT JOIN group_members all_members ON wg.id = all_members.group_id
+  LEFT JOIN group_watches gw ON wg.id = gw.group_id AND gw.status = 'watching'
+  LEFT JOIN group_watch_progress gwp ON gw.id = gwp.group_watch_id
+  LEFT JOIN films f ON gw.film_id = f.id
+  GROUP BY wg.id, wg.name, wg.creator_id, gm.role, gw.deadline, f.title
   `;
 
   const { rows } = await db.query(sql, [userId]);
