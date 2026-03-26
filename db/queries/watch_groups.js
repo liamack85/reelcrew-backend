@@ -53,12 +53,15 @@ RETURNING *
   } = await db.query(sql, [name, creatorId]);
   return group;
 }
+@param {number} userId - The ID of the user.
+
 
 /**
  * Retrieves all watch groups a user belongs to, enriched with:
  * - member_count: total members in the group
  * - deadline: deadline of the active watch (null if no active watch)
  * - watched_count: number of members who have marked the active watch as watched
+ * - film_title: title of the active watch film (null if no active watch)
  * - Necessary for the function of the Profile Group progress cards
  * @param {number} userId - The ID of the user.
  */
@@ -71,13 +74,15 @@ export async function getUserGroups(userId) {
     gm.role,
     COUNT(DISTINCT all_members.id) AS member_count,
     gw.deadline,
-    COUNT(DISTINCT gwp.user_id) FILTER (WHERE gwp.status = 'watched') AS watched_count
+    COUNT(DISTINCT gwp.user_id) FILTER (WHERE gwp.status = 'watched') AS watched_count,
+    f.title AS film_title
   FROM watch_groups wg
   JOIN group_members gm ON wg.id = gm.group_id AND gm.user_id = $1
   LEFT JOIN group_members all_members ON wg.id = all_members.group_id
   LEFT JOIN group_watches gw ON wg.id = gw.group_id AND gw.status = 'watching'
   LEFT JOIN group_watch_progress gwp ON gw.id = gwp.group_watch_id
-  GROUP BY wg.id, wg.name, wg.creator_id, gm.role, gw.deadline
+  LEFT JOIN films f ON gw.film_id = f.id
+  GROUP BY wg.id, wg.name, wg.creator_id, gm.role, gw.deadline, f.title
   `;
 
   const { rows } = await db.query(sql, [userId]);
