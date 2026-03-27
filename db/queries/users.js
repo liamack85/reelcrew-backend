@@ -76,7 +76,7 @@ export async function getUserByUsernameAndPassword(username, password) {
  */
 export async function getUserById(id) {
   const sql = `
-  SELECT id, username, display_name, email
+  SELECT id, username, display_name, email, created_at
   FROM users
   WHERE id = $1
   `;
