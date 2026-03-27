@@ -65,22 +65,28 @@ RETURNING *
  */
 export async function getUserGroups(userId) {
   const sql = `
-  SELECT
-    wg.id,
-    wg.name,
-    wg.creator_id,
-    gm.role,
-    COUNT(DISTINCT all_members.id) AS member_count,
-    gw.deadline,
-    COUNT(DISTINCT gwp.user_id) FILTER (WHERE gwp.status = 'watched') AS watched_count,
-    f.title AS film_title
-  FROM watch_groups wg
-  JOIN group_members gm ON wg.id = gm.group_id AND gm.user_id = $1
-  LEFT JOIN group_members all_members ON wg.id = all_members.group_id
-  LEFT JOIN group_watches gw ON wg.id = gw.group_id AND gw.status = 'watching'
-  LEFT JOIN group_watch_progress gwp ON gw.id = gwp.group_watch_id
-  LEFT JOIN films f ON gw.film_id = f.id
-  GROUP BY wg.id, wg.name, wg.creator_id, gm.role, gw.deadline, f.title
+    SELECT
+      wg.id,
+      wg.name,
+      wg.creator_id,
+      gm.role,
+      COUNT(DISTINCT all_members.id) AS member_count,
+      gw.deadline,
+      COUNT(DISTINCT gwp.user_id) FILTER (WHERE gwp.status = 'watched') AS watched_count,
+      f.title AS film_title
+    FROM watch_groups wg
+    JOIN group_members gm ON wg.id = gm.group_id AND gm.user_id = $1
+    LEFT JOIN group_members all_members ON wg.id = all_members.group_id
+    LEFT JOIN LATERAL (
+      SELECT id, deadline, film_id
+      FROM group_watches
+      WHERE group_id = wg.id AND status = 'watching'
+      ORDER BY deadline ASC
+      LIMIT 1
+    ) gw ON true
+    LEFT JOIN group_watch_progress gwp ON gw.id = gwp.group_watch_id
+    LEFT JOIN films f ON gw.film_id = f.id
+    GROUP BY wg.id, wg.name, wg.creator_id, gm.role, gw.deadline, f.title
   `;
 
   const { rows } = await db.query(sql, [userId]);
