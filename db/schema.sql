@@ -1,11 +1,11 @@
-DROP TABLE IF EXISTS group_votes;
-DROP TABLE IF EXISTS group_watch_progress;
-DROP TABLE IF EXISTS group_watches;
-DROP TABLE IF EXISTS group_members;
-DROP TABLE IF EXISTS watch_groups;
-DROP TABLE IF EXISTS user_films;
-DROP TABLE IF EXISTS films;
-DROP TABLE IF EXISTS users;
+-- DROP TABLE IF EXISTS group_votes;
+-- DROP TABLE IF EXISTS group_watch_progress;
+-- DROP TABLE IF EXISTS group_watches;
+-- DROP TABLE IF EXISTS group_members;
+-- DROP TABLE IF EXISTS watch_groups;
+-- DROP TABLE IF EXISTS user_films;
+-- DROP TABLE IF EXISTS films;
+-- DROP TABLE IF EXISTS users;
 
 
 -- Registered Users
@@ -14,7 +14,8 @@ CREATE TABLE users (
   username VARCHAR(50) UNIQUE NOT NULL,
   display_name VARCHAR(100) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
 
