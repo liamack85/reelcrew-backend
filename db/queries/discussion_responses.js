@@ -67,3 +67,24 @@ export async function deleteDiscussionResponse(id) {
   const { rows: [response] } = await db.query(sql, [id]);
   return response;
 }
+
+/**
+ * Fetches a single discussion response by ID.
+ *
+ * @param {number} id - ID of the discussion response.
+ * @returns {Promise<Object|undefined>} The response row with group_creator_id, or undefined if not found.
+ */
+
+export async function getDiscussionResponseById(id) {
+  const sql = `
+  SELECT
+    discussion_responses.*,
+    watch_groups.creator_id AS group_creator_id
+  FROM discussion_responses
+  JOIN group_watches ON discussion_responses.group_watch_id = group_watches.id
+  JOIN watch_groups ON group_watches.group_id = watch_groups.id
+  WHERE discussion_responses.id = $1
+  `;
+  const { rows: [response] } = await db.query(sql, [id]);
+  return response;
+}
