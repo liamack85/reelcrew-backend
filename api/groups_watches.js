@@ -11,7 +11,9 @@ const router = express.Router();
 export default router;
 
 import requireBody from "#middleware/requireBody";
-import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId, getCurrentWatchByGroupId } from "#db/queries/group_watches";
+import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId, getCurrentWatchByGroupId, updateWatchEvent, deleteWatchEvent } from "#db/queries/group_watches";
+import getUserFromToken from "#middleware/getUserFromToken";
+import requireUser from "#middleware/requireUser";
 
 
 /**
@@ -66,3 +68,31 @@ router.param("id", async (req, res, next, id) => {
 router.get("/:id", (req, res) => {
   res.send(req.watchlist);
 });
+
+/**
+ * Host can update a watch event's film, deadline, and discussion prompt.
+ *
+ * @param {string} req.body.film_id - New film ID.
+ * @param {string} req.body.deadline - New deadline.
+ * @param {string} [req.body.discussion_prompt] - New discussion prompt (optional).
+ */
+router.patch("/:id", getUserFromToken, requireUser, requireBody (["film_id", "deadline"]), async (req, res) => {
+  if (req.user.id !== req.watchlist.group_creator_id) return res.status(403).send("Unauthorized");
+
+  const { film_id, deadline, discussion_prompt } = req.body;
+  const updated = await updateWatchEvent(req.watchlist.id, film_id, deadline, discussion_prompt ?? "");
+  res.send(updated);
+});
+
+/**
+ * Host can delete a specific watch event.
+ */
+router.delete("/:id", getUserFromToken, requireUser, async (req, res) => {
+  if (req.user.id !== req.watchlist.group_creator_id) return res.status(403).send("Unauthorized");
+
+  const deleted = await deleteWatchEvent(req.watchlist.id);
+  console.debug("DELETED: ", deleted);
+  res.sendStatus(204);
+}
+
+);
