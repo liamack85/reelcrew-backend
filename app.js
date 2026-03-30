@@ -11,6 +11,7 @@ import handlePostgresErrors from "#middleware/handlePostgresErrors";
 import cors from "cors";
 import morgan from "morgan";
 import groupWatchesRouter from "#api/groups_watches";
+import discussionResponsesRouter from "#api/discussion_responses";
 
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? /localhost/ }));
 
@@ -28,6 +29,7 @@ app.use("/films", filmsRouter);
 app.use("/watch-groups", watchGroupsRouter);
 app.use("/user-films", userFilmsRouter);
 app.use("/group-watches", groupWatchesRouter);
+app.use("/discussion-responses", discussionResponsesRouter);
 
 app.use(handlePostgresErrors);
 app.use((err, req, res, next) => {
