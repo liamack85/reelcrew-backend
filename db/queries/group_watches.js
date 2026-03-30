@@ -40,9 +40,12 @@ export const getGroupWatchList = async () => {
  */
 export const getGroupWatchListById = async (id) => {
   const sql = `
-    SELECT *
+    SELECT
+      group_watches.*,
+      watch_groups.creator_id AS group_creator_id
     FROM group_watches
-    WHERE id=$1
+    JOIN watch_groups ON group_watches.group_id = watch_groups.id
+    WHERE group_watches.id=$1
   `;
   const { rows: [watchlistItem] } = await db.query(sql, [id]);
   return watchlistItem;
