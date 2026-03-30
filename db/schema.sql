@@ -1,3 +1,4 @@
+-- DROP TABLE IF EXISTS discussion_responses;
 -- DROP TABLE IF EXISTS group_votes;
 -- DROP TABLE IF EXISTS group_watch_progress;
 -- DROP TABLE IF EXISTS group_watches;
@@ -90,4 +91,14 @@ CREATE TABLE group_votes (
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE (group_id, film_id, user_id)
+);
+
+-- Responses to discussion prompts for a group watch event
+CREATE TABLE discussion_responses (
+  id SERIAL PRIMARY KEY,
+  group_watch_id INT NOT NULL REFERENCES group_watches(id) ON DELETE CASCADE,
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content VARCHAR(1000) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
 );
