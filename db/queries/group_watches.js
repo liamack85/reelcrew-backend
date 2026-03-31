@@ -42,8 +42,10 @@ export const getGroupWatchListById = async (id) => {
   const sql = `
     SELECT
       group_watches.*,
-      watch_groups.creator_id AS group_creator_id
+      films.title, films.poster_url, films.year, films.director, films.runtime, films.genre, films.description,
+      watch_groups.creator_id AS group_creator_id, watch_groups.name AS group_name
     FROM group_watches
+    JOIN films ON group_watches.film_id = films.id
     JOIN watch_groups ON group_watches.group_id = watch_groups.id
     WHERE group_watches.id=$1
   `;
