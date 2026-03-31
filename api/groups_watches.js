@@ -79,8 +79,8 @@ router.get("/:id", (req, res) => {
 router.patch("/:id", getUserFromToken, requireUser, requireBody (["film_id", "deadline"]), async (req, res) => {
   if (req.user.id !== req.watchlist.group_creator_id) return res.status(403).send("Unauthorized");
 
-  const { film_id, deadline, discussion_prompt } = req.body;
-  const updated = await updateWatchEvent(req.watchlist.id, film_id, deadline, discussion_prompt ?? "");
+  const { film_id, deadline, discussion_prompt, status } = req.body;
+  const updated = await updateWatchEvent(req.watchlist.id, film_id, deadline, discussion_prompt ?? "", status ?? "watching");
   res.send(updated);
 });
 

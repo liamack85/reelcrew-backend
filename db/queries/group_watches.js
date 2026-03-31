@@ -116,15 +116,15 @@ export async function getCurrentWatchByGroupId(group_id) {
  * @param {string} discussion_prompt - New discussion prompt (may be empty).
  */
 
-export async function updateWatchEvent(id, film_id, deadline, discussion_prompt) {
+export async function updateWatchEvent(id, film_id, deadline, discussion_prompt, status) {
   const sql = `
   UPDATE group_watches
-  SET film_id = $1, deadline = $2, discussion_prompt = $3
-  WHERE id = $4
+  SET film_id = $1, deadline = $2, discussion_prompt = $3, status = $4
+  WHERE id = $5
   RETURNING *
   `;
 
-  const { rows : [updated] } = await db.query(sql, [film_id, deadline, discussion_prompt, id]);
+  const { rows : [updated] } = await db.query(sql, [film_id, deadline, discussion_prompt, status, id]);
   return updated;
 }
 
