@@ -46,9 +46,13 @@ export const getGroupWatchList = async () => {
 };
 
 /**
+ * Retrieves a single watch event by ID, enriched with film details,
+ * group info, member count, and per-member watch progress.
  *
- * @param {number} id
- * @returns
+ * @param {number} id - ID of the group_watches row.
+ * @returns {Promise<Object|null>} Watch object with nested progress, or null if not found.
+ *   - progress.members: array of { user_id, display_name, role, status, watched_at }
+ *   - progress.percent: percentage of members who have marked as watched
  */
 export const getGroupWatchListById = async (id) => {
   const sql = `
@@ -65,6 +69,32 @@ export const getGroupWatchListById = async (id) => {
   const {
     rows: [watchlistItem],
   } = await db.query(sql, [id]);
+  if (!watchlistItem) return null;
+
+  const progressSql = `
+    SELECT 
+      users.id AS user_id,
+      users.display_name,
+      group_members.role,
+      group_watch_progress.status,
+      group_watch_progress.watched_at
+    FROM group_members
+    JOIN users ON group_members.user_id = users.id
+    LEFT JOIN group_watch_progress 
+      ON group_watch_progress.user_id = users.id 
+      AND group_watch_progress.group_watch_id = $1
+    WHERE group_members.group_id = $2
+  `;
+  const { rows: members } = await db.query(progressSql, [
+    watchlistItem.id,
+    watchlistItem.group_id,
+  ]);
+
+  const watchedCount = members.filter((m) => m.status === "watched").length;
+  const percent =
+    members.length > 0 ? Math.round((watchedCount / members.length) * 100) : 0;
+
+  watchlistItem.progress = { members, percent };
   return watchlistItem;
 };
 
