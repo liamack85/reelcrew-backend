@@ -43,11 +43,12 @@ export const getGroupWatchListById = async (id) => {
     SELECT
       group_watches.*,
       films.title, films.poster_url, films.year, films.director, films.runtime, films.genre, films.description,
-      watch_groups.creator_id AS group_creator_id, watch_groups.name AS group_name
-    FROM group_watches
-    JOIN films ON group_watches.film_id = films.id
-    JOIN watch_groups ON group_watches.group_id = watch_groups.id
-    WHERE group_watches.id=$1
+      watch_groups.creator_id AS group_creator_id, watch_groups.name AS group_name,
+      (SELECT COUNT(*) FROM group_members WHERE group_members.group_id = group_watches.group_id) AS member_count
+  FROM group_watches
+  JOIN films ON group_watches.film_id = films.id
+  JOIN watch_groups ON group_watches.group_id = watch_groups.id
+  WHERE group_watches.id=$1
   `;
   const { rows: [watchlistItem] } = await db.query(sql, [id]);
   return watchlistItem;
@@ -145,4 +146,16 @@ export async function deleteWatchEvent (id) {
 
   const { rows: [deleted] } = await db.query(sql, [id]);
   return deleted;
+}
+
+export async function markMemberWatched(watchId, userId, status) {
+  const sql = `
+  INSERT INTO group_watch_progress (group_watch_id, user_id, status, watched_at)
+  VALUES ($1, $2, $3::text, CASE WHEN $3::text = 'watched' THEN NOW() ELSE NULL END)
+  ON CONFLICT (group_watch_id, user_id)
+  DO UPDATE SET status = $3::text, watched_at = CASE WHEN $3::text = 'watched' THEN NOW() ELSE NULL END
+  RETURNING *
+`;
+  const { rows: [updated] } = await db.query(sql, [watchId, userId, status]);
+  return updated;
 }

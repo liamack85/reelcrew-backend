@@ -11,7 +11,7 @@ const router = express.Router();
 export default router;
 
 import requireBody from "#middleware/requireBody";
-import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId, getCurrentWatchByGroupId, updateWatchEvent, deleteWatchEvent } from "#db/queries/group_watches";
+import { createGroupWatchList, getGroupWatchList, getGroupWatchListById, getWatchesByGroupId, getCurrentWatchByGroupId, updateWatchEvent, deleteWatchEvent, markMemberWatched } from "#db/queries/group_watches";
 import getUserFromToken from "#middleware/getUserFromToken";
 import requireUser from "#middleware/requireUser";
 
@@ -93,6 +93,18 @@ router.delete("/:id", getUserFromToken, requireUser, async (req, res) => {
   const deleted = await deleteWatchEvent(req.watchlist.id);
   console.debug("DELETED: ", deleted);
   res.sendStatus(204);
-}
+});
 
-);
+/** Member marks themselves as having watched the film for a specific watch event. */
+router.post("/:id/progress", getUserFromToken, requireUser, async (req, res) => {
+  try {
+    const { status } = req.body;
+    console.debug("progress route status:", status);
+    const updated = await markMemberWatched(req.watchlist.id, req.user.id, status);
+    if (!updated) return res.status(404).send("Progress row not found.");
+    res.send(updated);
+  } catch (e) {
+    console.debug("markMemberWatched error:", e.message);
+    res.status(500).send(e.message);
+  }
+});
