@@ -1,26 +1,38 @@
 import db from "#db/client";
 
 /**
- * 
+ *
  * @param {number} group_id - ID of the group to associate with this watch entry.
  * @param {string} film_id - ID of the film to associate with this watch entry.
  * @param {Date} deadline - Deadline for the watch (Date object or ISO string). Use null to clear.
  * @param {string} discussion_prompt - Optional discussion prompt text.
  * @param {string} comment - Optional comment.
- * @param {string} status - Status of the watch (e.g., 'watchlist' or 'watched'). 
+ * @param {string} status - Status of the watch (e.g., 'watchlist' or 'watched').
  */
 export async function createGroupWatchList(
-  group_id, film_id, deadline, discussion_prompt, comment, status
+  group_id,
+  film_id,
+  deadline,
+  discussion_prompt,
+  comment,
+  status,
 ) {
-  const sql=`
+  const sql = `
     INSERT INTO group_watches
     (group_id, film_id, deadline, discussion_prompt, comment, status)
     VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *
   `;
-  const {rows: [newlyCreatedGroupWatchList]} = await db.query(sql, [
-    group_id, film_id, deadline, discussion_prompt, comment, status
-  ])
+  const {
+    rows: [newlyCreatedGroupWatchList],
+  } = await db.query(sql, [
+    group_id,
+    film_id,
+    deadline,
+    discussion_prompt,
+    comment,
+    status,
+  ]);
   return newlyCreatedGroupWatchList;
 }
 
@@ -31,12 +43,12 @@ export const getGroupWatchList = async () => {
   `;
   const { rows: watchlist } = await db.query(sql);
   return watchlist;
-}
+};
 
 /**
- * 
- * @param {number} id 
- * @returns 
+ *
+ * @param {number} id
+ * @returns
  */
 export const getGroupWatchListById = async (id) => {
   const sql = `
@@ -50,12 +62,14 @@ export const getGroupWatchListById = async (id) => {
   JOIN watch_groups ON group_watches.group_id = watch_groups.id
   WHERE group_watches.id=$1
   `;
-  const { rows: [watchlistItem] } = await db.query(sql, [id]);
+  const {
+    rows: [watchlistItem],
+  } = await db.query(sql, [id]);
   return watchlistItem;
-}
+};
 
 /**
- * 
+ *
  * @param {number} group_id - ID of the group to associate with this watch entry.
  * @param {number} film_id - ID of the film to associate with this watch entry.
  * @param {Date} deadline - Deadline for the watch (Date object or ISO string). Use null to clear.
@@ -64,7 +78,15 @@ export const getGroupWatchListById = async (id) => {
  * @param {string} status - Status of the watch (e.g., 'watchlist' or 'watched').
  * @param {number} id - ID of the group watch entry to update.
  */
-export const updateGroupWatchList = async (group_id, film_id, deadline, discussion_prompt, comment, status, id) => {
+export const updateGroupWatchList = async (
+  group_id,
+  film_id,
+  deadline,
+  discussion_prompt,
+  comment,
+  status,
+  id,
+) => {
   const sql = `
     UPDATE group_watches 
     SET 
@@ -73,12 +95,20 @@ export const updateGroupWatchList = async (group_id, film_id, deadline, discussi
     RETURNING *
     `;
 
-  const { rows: [updatedGroupWatchList] } = await db.query(sql, [
-    group_id, film_id, deadline, discussion_prompt, comment, status, id
+  const {
+    rows: [updatedGroupWatchList],
+  } = await db.query(sql, [
+    group_id,
+    film_id,
+    deadline,
+    discussion_prompt,
+    comment,
+    status,
+    id,
   ]);
 
   return updatedGroupWatchList;
-}
+};
 
 export async function getWatchesByGroupId(group_id) {
   const sql = `
@@ -93,6 +123,15 @@ export async function getWatchesByGroupId(group_id) {
   return rows;
 }
 
+/**
+ * Retrieves the current active watch event for a group, including film details,
+ * group info, and member progress.
+ *
+ * @param {number} group_id - ID of the watch group.
+ * @returns {Promise<Object|null>} Watch object with nested progress, or null if no active watch.
+ *   - progress.members: array of { user_id, display_name, role, status, watched_at }
+ *   - progress.percent: percentage of members who have marked as watched
+ */
 export async function getCurrentWatchByGroupId(group_id) {
   const sql = `
     SELECT 
@@ -106,7 +145,35 @@ export async function getCurrentWatchByGroupId(group_id) {
     ORDER BY group_watches.deadline ASC
     LIMIT 1
   `;
-  const { rows: [watch] } = await db.query(sql, [group_id]);
+  // Fetch the active watch with film and group details
+  const {
+    rows: [watch],
+  } = await db.query(sql, [group_id]);
+  if (!watch) return null;
+
+  const progressSql = `
+   SELECT 
+    users.id AS user_id,
+    users.display_name,
+    group_members.role,
+    group_watch_progress.status,
+    group_watch_progress.watched_at
+  FROM group_members
+  JOIN users ON group_members.user_id = users.id
+  LEFT JOIN group_watch_progress 
+    ON group_watch_progress.user_id = users.id 
+    AND group_watch_progress.group_watch_id = $1
+  WHERE group_members.group_id = $2
+  `;
+  // Fetch per-member progress for this watch — joins users and group_members for display info
+  const { rows: members } = await db.query(progressSql, [watch.id, group_id]);
+
+  // Calculate watched percentage — guard against empty member list
+  const watchedCount = members.filter((m) => m.status === "watched").length;
+  const percent =
+    members.length > 0 ? Math.round((watchedCount / members.length) * 100) : 0;
+
+  watch.progress = { members, percent };
   return watch;
 }
 
@@ -119,7 +186,13 @@ export async function getCurrentWatchByGroupId(group_id) {
  * @param {string} discussion_prompt - New discussion prompt (may be empty).
  */
 
-export async function updateWatchEvent(id, film_id, deadline, discussion_prompt, status) {
+export async function updateWatchEvent(
+  id,
+  film_id,
+  deadline,
+  discussion_prompt,
+  status,
+) {
   const sql = `
   UPDATE group_watches
   SET film_id = $1, deadline = $2, discussion_prompt = $3, status = $4
@@ -127,7 +200,9 @@ export async function updateWatchEvent(id, film_id, deadline, discussion_prompt,
   RETURNING *
   `;
 
-  const { rows : [updated] } = await db.query(sql, [film_id, deadline, discussion_prompt, status, id]);
+  const {
+    rows: [updated],
+  } = await db.query(sql, [film_id, deadline, discussion_prompt, status, id]);
   return updated;
 }
 
@@ -137,14 +212,16 @@ export async function updateWatchEvent(id, film_id, deadline, discussion_prompt,
  * @param {number} id - ID of the group_watches row to delete.
  */
 
-export async function deleteWatchEvent (id) {
+export async function deleteWatchEvent(id) {
   const sql = ` 
   DELETE from group_watches
   WHERE id = $1
   RETURNING *
   `;
 
-  const { rows: [deleted] } = await db.query(sql, [id]);
+  const {
+    rows: [deleted],
+  } = await db.query(sql, [id]);
   return deleted;
 }
 
@@ -156,6 +233,8 @@ export async function markMemberWatched(watchId, userId, status) {
   DO UPDATE SET status = $3::text, watched_at = CASE WHEN $3::text = 'watched' THEN NOW() ELSE NULL END
   RETURNING *
 `;
-  const { rows: [updated] } = await db.query(sql, [watchId, userId, status]);
+  const {
+    rows: [updated],
+  } = await db.query(sql, [watchId, userId, status]);
   return updated;
 }
