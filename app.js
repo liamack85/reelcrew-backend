@@ -13,7 +13,7 @@ import morgan from "morgan";
 import groupWatchesRouter from "#api/groups_watches";
 import discussionResponsesRouter from "#api/discussion_responses";
 
-app.use(cors({ origin: process.env.CORS_ORIGIN ?? /localhost/ }));
+app.use(cors());
 
 app.use(morgan("dev"));
 
